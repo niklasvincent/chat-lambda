@@ -19,8 +19,8 @@ api_key=abcdef1234
 
 Using [lambda-packager](https://github.com/nlindblad/lambda-packager):
 
-    python package-lambda.py --source src
-    2016-03-27 20:22:05,704 - INFO - Created lambda zip file: src-193c4d8857dfbbb762b18b1fa5cbb8f16b609ff3.zip
+    python ~/Projects/lambda-packager/package-lambda.py --source src --libraries venv/lib/python2.7/site-packages
+    Created lambda zip file: src-0f21d460e910c416238c81f99e588ea687e5d96b.zip
 
 ## Local Development
 
