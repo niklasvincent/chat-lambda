@@ -1,0 +1,89 @@
+{
+	"AWSTemplateFormatVersion": "2010-09-09",
+	"Description": "Lambda function for SNS chat relay",
+	"Parameters": {
+		"S3Bucket": {
+			"Description": "S3 bucket to load Python code and configuration from",
+			"Type": "String",
+			"Default": ""
+		},
+		"S3Key": {
+			"Description": "S3 filename for the Python code zip file",
+			"Type": "String",
+			"Default": ""
+		},
+		"Handler": {
+			"Description": "Python method to invoke",
+			"Type": "String",
+			"Default": "main.handle"
+		}
+	},
+	"Resources": {
+		"LambdaRole": {
+			"Type": "AWS::IAM::Role",
+			"Properties": {
+				"AssumeRolePolicyDocument": {
+					"Version": "2012-10-17",
+					"Statement": [{
+						"Effect": "Allow",
+						"Principal": {
+							"Service": ["lambda.amazonaws.com"]
+						},
+						"Action": ["sts:AssumeRole"]
+					}]
+				},
+				"Path": "/",
+				"Policies": [{
+					"PolicyName": "LambdaPolicy",
+					"PolicyDocument": {
+						"Statement": [
+							{
+							"Effect": "Allow",
+							"Action": [
+								"s3:Get*"
+							],
+							"Resource": [
+								{"Fn::Join": ["", ["arn:aws:s3:::", {"Ref": "S3Bucket"}, "/*"]]}
+							]
+					  	},
+							{
+							"Effect": "Allow",
+							"Action": [
+								"logs:CreateLogGroup",
+								"logs:CreateLogStream",
+								"logs:PutLogEvents"
+							],
+							"Resource": "*"
+						}
+					]
+					}
+				}]
+			}
+		},
+		"ChatLambda": {
+			"Type": "AWS::Lambda::Function",
+			"DependsOn": [
+				"LambdaRole"
+			],
+			"Properties": {
+				"Code": {
+					"S3Bucket": {
+						"Ref": "S3Bucket"
+					},
+					"S3Key": {
+						"Ref": "S3Key"
+					}
+				},
+				"Role": {
+					"Fn::GetAtt": ["LambdaRole", "Arn"]
+				},
+				"Timeout": 30,
+				"Handler": {
+					"Ref": "Handler"
+				},
+				"Runtime": "python2.7",
+				"MemorySize": 128
+			}
+		}
+	}
+}
